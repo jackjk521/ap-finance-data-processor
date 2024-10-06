@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Upload App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Finance Xlsx Files</h1>
+
+        <h2>SQL Finance Raw Data Here</h2>
+        <!-- Single CSV upload form -->
+        <form action="/upload_single_sql" method="POST" enctype="multipart/form-data">
+            <label for="file">Upload SQL Finance Data:</label>
+            <input type="file" name="file" accept=".xlsx">
+            <button type="submit">Process</button>
+        </form>
+
+        <br>
+
+        <h2>QNS Finance Raw Data Here</h2>
+        <!-- Single CSV upload form -->
+        <form action="/upload_single_qns" method="POST" enctype="multipart/form-data">
+            <label for="file">Upload QNS Finance Data:</label>
+            <input type="file" name="file" accept=".xlsx">
+            <button type="submit">Process</button>
+        </form>
+
+        <br>
+
+        <h2>Merge exported finance files here</h2>
+        <!-- Multiple CSV upload form -->
+        <form action="/upload_multiple_merge" method="POST" enctype="multipart/form-data">
+            <label for="files">Upload Processed SQL and QNS CSVs:</label>
+            <input type="file" name="files" accept=".csv" multiple>
+            <button type="submit">Merge</button>
+        </form>
+    </div>
+</body>
+</html>
