@@ -1,90 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CSV Upload App</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #fff;
+        margin: 0;
+        padding: 0;
+        color: #000000;
+      }
 
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
+      .container {
+        width: 80%;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #f4f4f4;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
 
-        h1, h2 {
-            color: #333;
-        }
+      /* h1,
+      h2 {
+        color: #b30000;
+      }
 
-        form {
-            margin-bottom: 20px;
-        }
+      h3 {
+        color: #000000;
+      } */
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
+      .form-container {
+        display: flex;
+        justify-content: space-between;
+      }
 
-        input[type="file"] {
-            display: block;
-            margin-bottom: 10px;
-        }
+      .column {
+        width: 48%;
+      }
 
-        button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+      form {
+        margin-bottom: 20px;
+        padding: 20px;
+        background-color: #fff;
+        border: 2px solid #6d0000;
+        border-radius: 8px;
+      }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      input[type="file"],
+      input[type="input"] {
+        display: block;
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px solid #6d0000;
+        border-radius: 4px;
+        width: 90%;
+      }
+
+      button {
+        background-color: #b30000;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #800000;
+      }
+
+      .warning-text {
+        color: #b30000;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>Upload Finance Xlsx Files</h1>
+      <h1>Upload Finance Excel Files from SQL and QNS</h1>
 
-        <h2>SQL Finance Raw Data Here</h2>
-        <!-- Single CSV upload form -->
-        <form action="/upload_single_sql" method="POST" enctype="multipart/form-data">
+      <h2>STEP 1</h2>
+      <div class="form-container">
+        <div class="column">
+          <h3>SQL Finance Raw Data Here</h3>
+          <!-- Single CSV upload form -->
+          <form
+            action="/upload_single_sql"
+            method="POST"
+            enctype="multipart/form-data">
             <label for="file">Upload SQL Finance Data:</label>
-            <input type="file" name="file" accept=".xlsx">
+            <input type="file" name="file" accept=".xlsx" />
+            <label for="estate_name">Estate Name:</label>
+            <input type="input" name="estate_name" />
             <button type="submit">Process</button>
-        </form>
+          </form>
+        </div>
 
-        <br>
-
-        <h2>QNS Finance Raw Data Here</h2>
-        <!-- Single CSV upload form -->
-        <form action="/upload_single_qns" method="POST" enctype="multipart/form-data">
+        <div class="column">
+          <h3>QNS Finance Raw Data Here</h3>
+          <!-- Single CSV upload form -->
+          <form
+            action="/upload_single_qns"
+            method="POST"
+            enctype="multipart/form-data">
             <label for="file">Upload QNS Finance Data:</label>
-            <input type="file" name="file" accept=".xlsx">
+            <input type="file" name="file" accept=".xlsx" />
             <button type="submit">Process</button>
-        </form>
+          </form>
+        </div>
+      </div>
 
-        <br>
+      <br />
 
-        <h2>Merge exported finance files here</h2>
-        <!-- Multiple CSV upload form -->
-        <form action="/upload_multiple_merge" method="POST" enctype="multipart/form-data">
+      <div class="form-container">
+        <div class="column">
+          <h2>STEP 2</h2>
+
+          <h3>Merge exported finance files here</h3>
+
+          <!-- Multiple CSV upload form -->
+          <form
+            action="/upload_multiple_merge"
+            method="POST"
+            enctype="multipart/form-data">
             <label for="files">Upload Processed SQL and QNS CSVs:</label>
-            <input type="file" name="files" accept=".csv" multiple>
+            <input type="file" name="files" accept=".csv" multiple />
             <button type="submit">Merge</button>
-        </form>
+          </form>
+        </div>
+
+        <div class="column">
+          <h2>STEP 3</h2>
+
+          <h3>Upload merged finance data</h3>
+          <h5 class="warning-text">Note: Updates finance database</h5>
+
+          <form action="/update_db" method="POST" enctype="multipart/form-data">
+            <label for="merged_files"
+              >Upload Merged SQL and QNS from Step 2:</label
+            >
+            <input type="file" name="merged_files" accept=".csv" />
+            <button type="submit">Upload</button>
+          </form>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

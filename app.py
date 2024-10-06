@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, send_file
 import pandas as pd
 from io import BytesIO
+import re
 
 app = Flask(__name__)
 
@@ -17,7 +18,8 @@ def upload_single_sql():
         return redirect('/')
     
     file = request.files['file']
-    
+    estate_name = request.form['estate_name'].upper()
+
     if file.filename == '':
         return redirect('/')
     
@@ -74,6 +76,7 @@ def upload_single_sql():
 
         # FORMATTING
         formatted_df = pd.DataFrame({
+            'estate_name': estate_name,
             'account_code': tempDF['CodeName'], 
             'posted_date': tempDF['Post Date'],
             'ref_num_1': tempDF['Ref 1'],
@@ -107,16 +110,24 @@ def upload_single_qns():
     # Read and process CSV using Pandas
     if file:
         # Load the data from the Excel file
-        rawFinanceDF = pd.read_excel(file, skiprows=4, engine="openpyxl")  # Use header=None if there is no header row
+        rawFinanceDF = pd.read_excel(file, engine="openpyxl")  # Use header=None if there is no header row
         # print(rawFinanceDF.columns.toList())
         # print(rawFinanceDF.dtypes)
-        # print(rawFinanceDF)
 
-        # NaN Value to NOT DATE
-        rawFinanceDF.iloc[:, 0] = rawFinanceDF.iloc[:, 0].fillna('NOT DATE')
+        # Extract the property name from the cell containing "Property"
+        property_row = rawFinanceDF[rawFinanceDF.iloc[:, 0].str.contains("Property", na=False)]
+        property_name = property_row.iloc[0, 0].split(":")[1].strip() if not property_row.empty else "Unknown"
+        # print(property_name)
 
         # Initialize a temp dataframe for data manipulation
-        tempDF = rawFinanceDF
+        offset_rawFinanceDF = pd.read_excel(file, skiprows=4, engine="openpyxl")  
+        # NaN Value to NOT DATE
+        offset_rawFinanceDF.iloc[:, 0] = offset_rawFinanceDF.iloc[:, 0].fillna('NOT DATE')
+
+        tempDF = offset_rawFinanceDF # Start from the 4th row (index 3) and reset the index
+        # print(tempDF.columns)
+
+
         tempDF['CodeName'] = None
         current_string = None
 
@@ -151,6 +162,7 @@ def upload_single_qns():
         # FORMATTING
 
         formatted_df = pd.DataFrame({
+            'estate_name': property_name,
             'account_code': tempDF['CodeName'], 
             'ref_num_1': tempDF['Reference'],
             'ref_num_2': tempDF['Offset Reference'],
@@ -161,6 +173,7 @@ def upload_single_qns():
             'local_balance': tempDF['Balance'],
             'remarks': tempDF['Remarks']
         })
+
 
         # EXPORT FORMATTED DF
         output = BytesIO()  # Create an in-memory buffer
