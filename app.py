@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, redirect, send_file
-import pandas as pd
 from io import BytesIO
+# Data engineering tools
+import pandas as pd
 import re
+# HTTP Requests
+import requests
 
 app = Flask(__name__)
 
@@ -217,6 +220,33 @@ def upload_multiple_merge():
             output.seek(0)
     
     return send_file(output, mimetype='text/csv', as_attachment=True, download_name='merged_finance_data.csv')
+
+@app.route('/update_db', methods=['POST'])
+def update_db():
+    file = request.files.getlist('merged_finance_data')
+    
+    if file.filename == '':
+        return redirect('/')
+    
+    # Read and process CSV using Pandas
+    if file:
+        # Load the data from the CSV file
+        merged_df = pd.read_csv(file)
+        
+        # Prepare the data for the API request
+        data = merged_df.to_dict(orient='records')
+        
+        # Define the API endpoint and headers
+        api_url = 'https://api.example.com/update_database'  # Replace with your actual API endpoint
+        headers = {'Content-Type': 'application/json'}
+        
+        # Make the API request
+        response = requests.post(api_url, json=data, headers=headers)
+        
+        if response.status_code == 200:
+            return "Database updated successfully!"
+        else:
+            return f"Failed to update database. Status code: {response.status_code}, Response: {response.text}"
 
 if __name__ == '__main__':
     app.run(debug=True)
