@@ -205,6 +205,12 @@ def upload_multiple_merge():
             # Append the DataFrame to the merged DataFrame
             merged_df = pd.concat([merged_df, df], ignore_index=True)
 
+            # Add a new column 'id' with sequential numbers starting from 1 for identification
+            merged_df['id'] = range(1, len(merged_df) + 1)
+
+            # Insert the new column 'id' at the first position (index 0)
+            merged_df.insert(0, 'id', merged_df.pop('id'))
+
             # Save the merged DataFrame to a new CSV file
             output = BytesIO()
             merged_df.to_csv(output, index=False)

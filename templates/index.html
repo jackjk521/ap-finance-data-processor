@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CSV Upload App</title>
+    <title>Finance Processor App</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -21,15 +21,6 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
       }
-
-      /* h1,
-      h2 {
-        color: #b30000;
-      }
-
-      h3 {
-        color: #000000;
-      } */
 
       .form-container {
         display: flex;
@@ -80,12 +71,31 @@
       .warning-text {
         color: #b30000;
       }
+      .main-title {
+        text-align: center;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f4f4f4;
+        border-top: 1px solid #b30000;
+      }
+
+      footer p {
+        margin: 0;
+        color: #b30000;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Upload Finance Excel Files from SQL and QNS</h1>
+      <h1 class="main-title">Finance Data Processor from SQL and QNS</h1>
+    </div>
 
+    <div class="container">
       <h2>STEP 1</h2>
       <div class="form-container">
         <div class="column">
@@ -152,5 +162,9 @@
         </div>
       </div>
     </div>
+
+    <footer>
+      <p>Developed by Jed Chu @ https://jcsolutions.webflow.io/</p>
+    </footer>
   </body>
 </html>
