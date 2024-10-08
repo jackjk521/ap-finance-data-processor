@@ -5,6 +5,7 @@ import pandas as pd
 import re
 # HTTP Requests
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -249,4 +250,5 @@ def update_db():
             return f"Failed to update database. Status code: {response.status_code}, Response: {response.text}"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']
+    app.run(debug=debug_mode)
