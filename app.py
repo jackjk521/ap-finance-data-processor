@@ -1,6 +1,11 @@
 from flask import Flask, render_template, request, redirect, send_file
-import pandas as pd
 from io import BytesIO
+# Data engineering tools
+import pandas as pd
+import re
+# HTTP Requests
+import requests
+import os
 
 app = Flask(__name__)
 
@@ -17,7 +22,8 @@ def upload_single_sql():
         return redirect('/')
     
     file = request.files['file']
-    
+    estate_name = request.form['estate_name'].upper()
+
     if file.filename == '':
         return redirect('/')
     
@@ -74,6 +80,7 @@ def upload_single_sql():
 
         # FORMATTING
         formatted_df = pd.DataFrame({
+            'estate_name': estate_name,
             'account_code': tempDF['CodeName'], 
             'posted_date': tempDF['Post Date'],
             'ref_num_1': tempDF['Ref 1'],
@@ -107,16 +114,24 @@ def upload_single_qns():
     # Read and process CSV using Pandas
     if file:
         # Load the data from the Excel file
-        rawFinanceDF = pd.read_excel(file, skiprows=4, engine="openpyxl")  # Use header=None if there is no header row
+        rawFinanceDF = pd.read_excel(file, engine="openpyxl")  # Use header=None if there is no header row
         # print(rawFinanceDF.columns.toList())
         # print(rawFinanceDF.dtypes)
-        # print(rawFinanceDF)
 
-        # NaN Value to NOT DATE
-        rawFinanceDF.iloc[:, 0] = rawFinanceDF.iloc[:, 0].fillna('NOT DATE')
+        # Extract the property name from the cell containing "Property"
+        property_row = rawFinanceDF[rawFinanceDF.iloc[:, 0].str.contains("Property", na=False)]
+        property_name = property_row.iloc[0, 0].split(":")[1].strip() if not property_row.empty else "Unknown"
+        # print(property_name)
 
         # Initialize a temp dataframe for data manipulation
-        tempDF = rawFinanceDF
+        offset_rawFinanceDF = pd.read_excel(file, skiprows=4, engine="openpyxl")  
+        # NaN Value to NOT DATE
+        offset_rawFinanceDF.iloc[:, 0] = offset_rawFinanceDF.iloc[:, 0].fillna('NOT DATE')
+
+        tempDF = offset_rawFinanceDF # Start from the 4th row (index 3) and reset the index
+        # print(tempDF.columns)
+
+
         tempDF['CodeName'] = None
         current_string = None
 
@@ -151,6 +166,7 @@ def upload_single_qns():
         # FORMATTING
 
         formatted_df = pd.DataFrame({
+            'estate_name': property_name,
             'account_code': tempDF['CodeName'], 
             'ref_num_1': tempDF['Reference'],
             'ref_num_2': tempDF['Offset Reference'],
@@ -161,6 +177,7 @@ def upload_single_qns():
             'local_balance': tempDF['Balance'],
             'remarks': tempDF['Remarks']
         })
+
 
         # EXPORT FORMATTED DF
         output = BytesIO()  # Create an in-memory buffer
@@ -192,6 +209,12 @@ def upload_multiple_merge():
             # Append the DataFrame to the merged DataFrame
             merged_df = pd.concat([merged_df, df], ignore_index=True)
 
+            # Add a new column 'id' with sequential numbers starting from 1 for identification
+            merged_df['id'] = range(1, len(merged_df) + 1)
+
+            # Insert the new column 'id' at the first position (index 0)
+            merged_df.insert(0, 'id', merged_df.pop('id'))
+
             # Save the merged DataFrame to a new CSV file
             output = BytesIO()
             merged_df.to_csv(output, index=False)
@@ -199,5 +222,33 @@ def upload_multiple_merge():
     
     return send_file(output, mimetype='text/csv', as_attachment=True, download_name='merged_finance_data.csv')
 
+@app.route('/update_db', methods=['POST'])
+def update_db():
+    file = request.files.getlist('merged_finance_data')
+    
+    if file.filename == '':
+        return redirect('/')
+    
+    # Read and process CSV using Pandas
+    if file:
+        # Load the data from the CSV file
+        merged_df = pd.read_csv(file)
+        
+        # Prepare the data for the API request
+        data = merged_df.to_dict(orient='records')
+        
+        # Define the API endpoint and headers
+        api_url = 'https://api.example.com/update_database'  # Replace with your actual API endpoint
+        headers = {'Content-Type': 'application/json'}
+        
+        # Make the API request
+        response = requests.post(api_url, json=data, headers=headers)
+        
+        if response.status_code == 200:
+            return "Database updated successfully!"
+        else:
+            return f"Failed to update database. Status code: {response.status_code}, Response: {response.text}"
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']
+    app.run(debug=debug_mode)
