@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Finance Processor App</title>
+    <link rel="icon" href="/static/ace_international_logo_only.png" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -154,11 +157,15 @@
             Note: Updates finance database ( ONGOING )
           </h5>
 
-          <form action="/update_db" method="POST" enctype="multipart/form-data">
-            <label for="merged_files"
+          <form
+            id="update_db_form"
+            action="/update_db"
+            method="POST"
+            enctype="multipart/form-data">
+            <label for="merged_file"
               >Upload Merged SQL and QNS from Step 2:</label
             >
-            <input type="file" name="merged_files" accept=".csv" />
+            <input type="file" name="merged_file" accept=".csv" />
             <button type="submit">Upload</button>
           </form>
         </div>
@@ -168,5 +175,42 @@
     <footer>
       <p>Developed by Jed Chu @ https://jcsolutions.webflow.io/</p>
     </footer>
+
+    <script>
+      function uploadFile() {
+          const form = document.getElementById('uploadForm');
+          const formData = new FormData(form);
+          const fileInput = document.getElementById('merged_file');
+
+          if (fileInput.files.length === 0) {
+              Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Please select a file to upload.'
+              });
+              return;
+          }
+
+          fetch('/update_db', {
+              method: 'PUT',
+              body: formData
+          })
+          .then(response => response.text())
+          .then(data => {
+              Swal.fire({
+                  icon: 'success',
+                  title: 'Success',
+                  text: data
+              });
+          })
+          .catch(error => {
+              Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'An error occurred: ' + error
+              });
+          });
+      }
+  </script>
   </body>
 </html>

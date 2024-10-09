@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, redirect, send_file, jsonify
 from io import BytesIO
 # Data engineering tools
 import pandas as pd
@@ -6,6 +6,10 @@ import re
 # HTTP Requests
 import requests
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -224,30 +228,30 @@ def upload_multiple_merge():
 
 @app.route('/update_db', methods=['POST'])
 def update_db():
-    file = request.files.getlist('merged_finance_data')
-    
-    if file.filename == '':
+    file = request.files.get('merged_file')
+    print(file)
+    if not file or file.filename == '':
         return redirect('/')
     
-    # Read and process CSV using Pandas
-    if file:
-        # Load the data from the CSV file
-        merged_df = pd.read_csv(file)
-        
-        # Prepare the data for the API request
-        data = merged_df.to_dict(orient='records')
-        
+    if file:        
         # Define the API endpoint and headers
-        api_url = 'https://api.example.com/update_database'  # Replace with your actual API endpoint
-        headers = {'Content-Type': 'application/json'}
-        
+        api_url =  os.getenv('UPDATE_DB_URL')  # Replace with your actual API endpoint
+
+        # Prepare the files dictionary for the request
+        files = {'file': (file.filename, file.stream, file.content_type)}
         # Make the API request
-        response = requests.post(api_url, json=data, headers=headers)
+        response = requests.put(api_url, files=files)
         
         if response.status_code == 200:
-            return "Database updated successfully!"
+            return redirect('/')
         else:
-            return f"Failed to update database. Status code: {response.status_code}, Response: {response.text}"
+            return "Error updating database"
+
+
+        # if response.status_code == 200:
+        #     return jsonify({"status": "success", "message": "Database updated successfully!"})
+        # else:
+        #     return jsonify({"status": "error", "message": f"Failed to update database. Status code: {response.status_code}, Response: {response.text}"}), response.status_code
 
 if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']
